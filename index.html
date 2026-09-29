@@ -1305,24 +1305,89 @@
       const sidebar = document.querySelector(".sidebar");
       const scrollToTopBtn = document.getElementById("scrollToTopBtn");
       async function fetchTMDBData(endpoint, params = {}) {
-        try {
+        const request = async (includeLanguage) => {
           const url = new URL(`${CONFIG.urls.tmdb.base}${endpoint}`);
           url.searchParams.append("api_key", CONFIG.apiKeys.tmdb);
-          
-          if (!useOriginalLanguage) {
-            const langToUse = userLanguageCode || "en-US";
-            url.searchParams.append("language", langToUse);
+
+          if (includeLanguage) {
+            url.searchParams.append("language", userLanguageCode || "en-US");
           }
-          
+
           Object.keys(params).forEach((key) =>
             url.searchParams.append(key, params[key])
           );
-          
+
           const response = await fetch(url);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           return await response.json();
+        };
+
+        const hasMissingValue = (value) => {
+          if (value === null || value === undefined || value === "") return true;
+          if (Array.isArray(value)) return value.length === 0 || value.some(hasMissingValue);
+          if (typeof value === "object") return Object.values(value).some(hasMissingValue);
+          return false;
+        };
+
+        const mergeFallback = (localized, fallback, appendVideos = false) => {
+          if (localized === null || localized === undefined || localized === "") return fallback;
+          if (Array.isArray(localized)) {
+            if (!localized.length) return fallback;
+            if (!Array.isArray(fallback)) return localized;
+
+            const merged = localized.map((item, index) => {
+              const itemKey = item && (item.id ?? item.key);
+              const fallbackItem = itemKey === undefined
+                ? (fallback.length === localized.length ? fallback[index] : undefined)
+                : fallback.find((candidate) => candidate && (candidate.id ?? candidate.key) === itemKey);
+              return fallbackItem === undefined ? item : mergeFallback(item, fallbackItem);
+            });
+
+            if (appendVideos) {
+              const existingKeys = new Set(merged.map((item) => item && (item.id ?? item.key)));
+              fallback.forEach((item) => {
+                const itemKey = item && (item.id ?? item.key);
+                if (itemKey !== undefined && !existingKeys.has(itemKey)) merged.push(item);
+              });
+            }
+            return merged;
+          }
+          if (typeof localized === "object" && typeof fallback === "object" && fallback !== null) {
+            const merged = { ...localized };
+            Object.keys(fallback).forEach((key) => {
+              merged[key] = key in localized
+                ? mergeFallback(localized[key], fallback[key], appendVideos && key === "results")
+                : fallback[key];
+            });
+            return merged;
+          }
+          return localized;
+        };
+
+        try {
+          const localized = await request(!useOriginalLanguage);
+          if (useOriginalLanguage) return localized;
+
+          const isVideosEndpoint = endpoint.endsWith("/videos");
+          const hasTrailer = isVideosEndpoint && localized?.results?.some((video) =>
+            video.site === "YouTube" && video.type === "Trailer"
+          );
+          const isDetailEndpoint = /^\/(movie|tv)\/\d+$/.test(endpoint);
+          const hasMissingDetails = isDetailEndpoint && (
+            !(localized.title || localized.name || localized.original_title || localized.original_name)
+            || !localized.overview
+          );
+          if (!hasMissingValue(localized) && !hasMissingDetails && (!isVideosEndpoint || hasTrailer)) return localized;
+
+          try {
+            const fallback = await request(false);
+            return mergeFallback(localized, fallback, isVideosEndpoint);
+          } catch (error) {
+            console.error("Error fetching TMDB fallback data:", error);
+            return localized;
+          }
         } catch (error) {
           console.error("Error fetching TMDB data:", error);
           return null;
