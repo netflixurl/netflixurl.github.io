@@ -69,11 +69,6 @@
       .logo:hover {
         transform: scale(1.05);
       }
-      h1 {
-        color: var(--primary-color);
-        margin: 0;
-        display: none;
-      }
       .search-container {
         width: 90%;
         max-width: 800px;
@@ -301,19 +296,6 @@
         transform: scale(1.1);
         border-color: #fff;
       }
-      #mediaInfo {
-        margin-top: 2vh;
-        padding: 2vh;
-        background-color: #333;
-        border-radius: 5px;
-      }
-      footer {
-        text-align: center;
-        padding: 2vh 0;
-        color: var(--text-color);
-        font-size: 14px;
-        font-weight: bold;
-      }
       .video-container {
         position: relative;
         padding-bottom: 56.25%;
@@ -332,6 +314,49 @@
         color: var(--text-color);
         margin: 0 0 1vh 0;
         font-size: 1.5rem;
+      }
+      .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        height: 100%;
+        width: 25vw;
+        min-width: 250px;
+        background-color: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(10px);
+        transition: left 0.3s ease;
+        z-index: 10002;
+        padding-top: 8vh;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+      }
+      .sidebar.open {
+        left: 0;
+      }
+      .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10001;
+        display: none;
+        backdrop-filter: blur(2px);
+      }
+      .sidebar-overlay.active {
+        display: block;
+      }
+      .sidebar-toggle {
+        position: fixed;
+        left: 2vw;
+        top: 2vh;
+        z-index: 1000;
+        background: var(--primary-color);
+        border: none;
+        color: var(--text-color);
+        padding: 1vh 1.5vw;
+        border-radius: 5px;
+        cursor: pointer;
       }
       .settings-toggle {
         position: fixed;
@@ -361,6 +386,46 @@
         width: 18px;
         height: 18px;
         display: block;
+      }
+      .genre-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+      .genre-list::-webkit-scrollbar {
+        width: 8px;
+      }
+      .genre-list::-webkit-scrollbar-track {
+        background: var(--background-color);
+      }
+      .genre-list::-webkit-scrollbar-thumb {
+        background: #666;
+        border-radius: 4px;
+      }
+      .genre-list::-webkit-scrollbar-thumb:hover {
+        background: #888;
+      }
+      .genre-item {
+        padding: 1.5vh 2.4vh;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        font-size: 1rem;
+        color: var(--text-color);
+      }
+      .genre-item:hover {
+        background-color: var(--hover-color);
+      }
+      .genre-header {
+        background-color: var(--secondary-color);
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        padding: 2vh;
+        font-weight: bold;
+        color: var(--primary-color);
+        text-transform: uppercase;
       }
       #seasonSelect,
       #episodeSelect {
@@ -432,9 +497,15 @@
         .media-grid {
           gap: 10px;
         }
+        .sidebar {
+          width: 100%;
+        }
         .logo {
           width: 40vw;
         }
+      }
+      .sidebar-toggle.hidden {
+        display: none;
       }
       .episode-navigation {
         display: flex;
@@ -510,7 +581,6 @@
         font-size: 1rem;
         font-weight: 600;
         margin: 1vh auto; 
-        display: block; 
         min-width: 200px; 
         height: 44px;
         text-align: center;
@@ -552,30 +622,33 @@
         color: var(--text-color);
         box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
       }
-      .browse-controls {
+      .filter-buttons {
         display: flex;
         justify-content: center;
         gap: 1rem;
         margin-bottom: 2rem;
         flex-wrap: wrap;
       }
-      .browse-controls select {
-        min-width: min(220px, 42vw);
-        height: 44px;
-        padding: 0 1rem;
-        background-color: var(--secondary-color);
+      .filter-btn {
+        padding: 0.7rem 1.4rem;
+        font-size: 0.9rem;
+        background-color: transparent;
         color: var(--text-color);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
         cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
       }
-      .browse-controls select:focus {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
+      .filter-btn:hover {
+        background-color: var(--hover-color);
+        border-color: var(--text-color);
       }
-      .browse-controls select:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
+      .filter-btn.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        font-weight: 700;
+        color: var(--text-color);
       }
       .recommendations-section {
         padding: 2vh 15px;
@@ -774,6 +847,7 @@
     </style>
   </head>
   <body>
+    <button class="sidebar-toggle">&#x2630; Categories</button>
     <button class="settings-toggle" id="settingsToggle" title="Settings">
       <img src="https://i.imgur.com/W6V9KZJ.png" alt="Settings" />
     </button>
@@ -805,6 +879,9 @@
         <button class="settings-close-btn" id="closeSettings">Close</button>
       </div>
     </div>
+    <div class="sidebar">
+      <ul class="genre-list" id="genreList"></ul>
+    </div>
     <div class="container">
       <header>
         <div class="header-top">
@@ -828,14 +905,10 @@
         <button class="type-btn" data-type="tv">TV Shows</button>
         <button class="type-btn" data-type="mylist">My List</button>
       </div>
-      <div class="browse-controls" id="browseControls">
-        <select id="genreSelect" aria-label="Genre">
-          <option value="">All Genres</option>
-        </select>
-        <select id="sortSelect" aria-label="Sort results">
-          <option value="popular">Popular</option>
-          <option value="top_rated">Top Rated</option>
-        </select>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="popular">Popular</button>
+        <button class="filter-btn" data-filter="top_rated">Top Rated</button>
+        <button class="filter-btn" data-filter="trending">Trending</button>
       </div>
       <section class="media-section">
         <div id="mediaGrid" class="media-grid"></div>
@@ -846,12 +919,7 @@
     </button>
     <div id="playerModal" class="modal">
       <span class="close" id="modalCloseBtn">&times;</span>
-      <div class="modal-content">
-        <div class="video-container">
-          <iframe id="player" frameborder="0" allowfullscreen></iframe>
-        </div>
-        <div id="mediaInfo"></div>
-      </div>
+      <div class="modal-content"></div>
     </div>
     <script>
       const CONFIG = {
@@ -864,30 +932,6 @@
             images: "https://image.tmdb.org/t/p/w500",
           },
         },
-        defaultLanguage: "en-US",
-        gridSettings: {
-          mobileBreakpoint: 768,
-          defaultPageSize: 20,
-        },
-        styling: {
-          colors: {
-            primary: "#e50914",
-            background: "#141414",
-            secondary: "#232323",
-            text: "#fff",
-          },
-        },
-        ui: {
-          breakpoints: {
-            mobile: 480,
-            tablet: 768,
-            desktop: 1024,
-          },
-          animation: {
-            duration: 300,
-            easing: "ease",
-          },
-        },
       };
       let currentMediaType = "movie";
       let myList = JSON.parse(localStorage.getItem("netflix_my_list") || "[]");
@@ -897,9 +941,8 @@
       let isSearchMode = false;
       let currentSearchQuery = "";
       let currentGenreId = null;
+      let currentGenreType = null;
       let currentFilter = 'popular';
-      let movieGenres = [];
-      let tvGenres = [];
       
       let useOriginalLanguage = false;
       let userLanguageCode = "en-US";
@@ -961,36 +1004,10 @@
       const mediaGrid = document.getElementById("mediaGrid");
       const searchInput = document.getElementById("searchInput");
       const searchButton = document.getElementById("searchButton");
+      const genreList = document.getElementById("genreList");
+      const sidebarToggle = document.querySelector(".sidebar-toggle");
+      const sidebar = document.querySelector(".sidebar");
       const scrollToTopBtn = document.getElementById("scrollToTopBtn");
-      function updateCSSVariables() {
-        const root = document.documentElement;
-        root.style.setProperty(
-          "--primary-color",
-          CONFIG.styling.colors.primary
-        );
-        root.style.setProperty(
-          "--background-color",
-          CONFIG.styling.colors.background
-        );
-        root.style.setProperty(
-          "--secondary-color",
-          CONFIG.styling.colors.secondary
-        );
-        root.style.setProperty("--text-color", CONFIG.styling.colors.text);
-        root.style.setProperty(
-          "--mobile-breakpoint",
-          `${CONFIG.gridSettings.mobileBreakpoint}px`
-        );
-      }
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (let entry of entries) {
-          const width = entry.contentRect.width;
-          document.body.classList.toggle(
-            "mobile",
-            width <= CONFIG.gridSettings.mobileBreakpoint
-          );
-        }
-      });
       async function fetchTMDBData(endpoint, params = {}) {
         try {
           const url = new URL(`${CONFIG.urls.tmdb.base}${endpoint}`);
@@ -1000,6 +1017,7 @@
             const langToUse = userLanguageCode || "en-US";
             url.searchParams.append("language", langToUse);
           }
+          
           Object.keys(params).forEach((key) =>
             url.searchParams.append(key, params[key])
           );
@@ -1023,20 +1041,28 @@
         let endpoint = '';
         let mediaTypeForDisplay = currentMediaType;
         let params = { page: currentPage };
-        if (isSearchMode) {
+        if (currentGenreId) {
+            endpoint = `/discover/${currentGenreType}`;
+            params.with_genres = currentGenreId;
+            mediaTypeForDisplay = currentGenreType;
+        } else if (isSearchMode) {
             endpoint = "/search/multi";
             params.query = currentSearchQuery;
             mediaTypeForDisplay = "multi";
-        } else if (currentGenreId) {
-          endpoint = `/discover/${currentMediaType}`;
-          params.sort_by = currentFilter === "top_rated"
-            ? "vote_average.desc"
-            : "popularity.desc";
-          params.with_genres = currentGenreId;
         } else {
-          endpoint = currentFilter === "top_rated"
-            ? `/${currentMediaType}/top_rated`
-            : `/${currentMediaType}/popular`;
+             switch (currentFilter) {
+                case 'popular':
+                    endpoint = `/${currentMediaType}/popular`;
+                    break;
+                case 'top_rated':
+                    endpoint = `/${currentMediaType}/top_rated`;
+                    break;
+                case 'trending':
+                    endpoint = `/trending/${currentMediaType}/week`;
+                    break;
+                default:
+                    return;
+            }
         }
         isLoading = true;
         try {
@@ -1216,6 +1242,7 @@
         const mediaStateKey = `${type}_${id}_${seasonStr || 'info'}_${episodeStr || 'info'}`;
         if (window.currentActiveMedia === mediaStateKey && playerModal.style.display === "block") return;
         window.currentActiveMedia = mediaStateKey;
+        updateCategoriesButtonVisibility(false);
         try {
           const mediaDetails = await fetchTMDBData(`/${type}/${id}`);
           if (!mediaDetails) return;
@@ -1362,7 +1389,7 @@
             });
           }
         });
-        await seasonSelect.dispatchEvent(new Event("change"));
+        seasonSelect.dispatchEvent(new Event("change"));
       }
       function loadVideo(mediaDetails, season = null, episode = null) {
         const modalContent = document.querySelector(".modal-content");
@@ -1611,6 +1638,7 @@
         document.documentElement.classList.remove("modal-is-open");
         document.body.classList.remove("modal-is-open");
         playerModal.style.display = "none";
+        updateCategoriesButtonVisibility(true);
         const url = new URL(window.location);
         url.searchParams.delete("movie");
         url.searchParams.delete("tv");
@@ -1645,52 +1673,80 @@
           }
         });
       }
-      async function searchMedia(query) {
+      function updateCategoriesButtonVisibility(show) {
+        const sidebarToggle = document.querySelector(".sidebar-toggle");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.querySelector(".sidebar-overlay");
+        if (show) {
+          sidebarToggle.classList.remove("hidden");
+        } else {
+          sidebarToggle.classList.add("hidden");
+          if (sidebar.classList.contains("open")) {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("active");
+            document.body.style.overflowY = "auto"; 
+          }
+        }
+      }
+      function searchMedia(query) {
         const normalizedQuery = query.trim();
         currentGenreId = null;
+        currentGenreType = null;
         currentFilter = 'popular';
         currentSearchQuery = normalizedQuery;
         isSearchMode = Boolean(normalizedQuery);
         currentPage = 1;
         mediaGrid.innerHTML = "";
         displayedMediaIds.clear();
-        document.getElementById("genreSelect").value = "";
-        document.getElementById("sortSelect").value = "popular";
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === 'popular');
+        });
         updateSearchUrl(normalizedQuery);
-        loadMedia();
-      }
-      function reloadBrowseResults() {
-        isSearchMode = false;
-        currentSearchQuery = "";
-        searchInput.value = "";
-        currentPage = 1;
-        mediaGrid.innerHTML = "";
-        displayedMediaIds.clear();
-        updateSearchUrl("");
         loadMedia();
       }
       async function loadGenres() {
         try {
-          [movieGenres, tvGenres] = await Promise.all([
-            fetchTMDBData("/genre/movie/list"),
-            fetchTMDBData("/genre/tv/list"),
-          ]).then(([movies, tv]) => [movies?.genres || [], tv?.genres || []]);
-          updateGenreOptions();
+          const movieGenres = await fetchTMDBData("/genre/movie/list");
+          const tvGenres = await fetchTMDBData("/genre/tv/list");
+          const genreList = document.getElementById("genreList");
+          genreList.innerHTML = `
+                      <li class="genre-header">Movie Categories</li>
+                      ${movieGenres.genres
+                        .map(
+                          (genre) =>
+                            `<li class="genre-item" data-type="movie" data-id="${genre.id}">${genre.name}</li>`
+                        )
+                        .join("")}
+                      <li class="genre-header">TV Show Categories</li>
+                      ${tvGenres.genres
+                        .map(
+                          (genre) =>
+                            `<li class="genre-item" data-type="tv" data-id="${genre.id}">${genre.name}</li>`
+                        )
+                        .join("")}
+                    `;
+          genreList.querySelectorAll(".genre-item").forEach((item) => {
+            item.addEventListener("click", () => {
+              loadGenreContent(item.dataset.id, item.dataset.type);
+            });
+          });
         } catch (error) {
           console.error("Error loading genres:", error);
         }
       }
-      function updateGenreOptions() {
-        const genreSelect = document.getElementById("genreSelect");
-        const selectedGenre = currentGenreId || "";
-        const genres = currentMediaType === "tv" ? tvGenres : movieGenres;
-        genreSelect.replaceChildren(new Option("All Genres", ""));
-        genres.forEach((genre) => genreSelect.add(new Option(genre.name, genre.id)));
-        genreSelect.value = selectedGenre;
-        genreSelect.disabled = currentMediaType === "mylist";
-
-        const sortSelect = document.getElementById("sortSelect");
-        sortSelect.disabled = currentMediaType === "mylist";
+      function loadGenreContent(genreId, mediaType) {
+        mediaGrid.innerHTML = "";
+        currentPage = 1;
+        currentGenreId = genreId;
+        currentGenreType = mediaType;
+        displayedMediaIds.clear();
+        isSearchMode = false;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active')); 
+        currentMediaType = mediaType;
+        const typeBtn = document.querySelector(`.type-btn[data-type="${mediaType}"]`);
+        if (typeBtn) typeBtn.classList.add('active');
+        loadMedia();
       }
       window.onscroll = function () {
         scrollFunction();
@@ -1744,12 +1800,9 @@
         }
       }
       document.addEventListener("DOMContentLoaded", () => {
-        updateCSSVariables();
-        resizeObserver.observe(document.body);
-        const browseControls = document.getElementById("browseControls");
-        const genreSelect = document.getElementById("genreSelect");
-        const sortSelect = document.getElementById("sortSelect");
-        updateGenreOptions();
+        const overlay = document.createElement("div");
+        overlay.className = "sidebar-overlay";
+        document.body.appendChild(overlay);
         handleUrlParameters(true);
         if (!new URLSearchParams(window.location.search).get("search")) {
           loadMedia();
@@ -1772,26 +1825,39 @@
                 currentPage = 1;
                 isSearchMode = false;
                 currentGenreId = null;
-                currentSearchQuery = "";
-                searchInput.value = "";
+                currentGenreType = null;
                 mediaGrid.innerHTML = "";
                 displayedMediaIds.clear();
-                updateGenreOptions();
-                browseControls.hidden = type === "mylist";
                 document.querySelectorAll('.type-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.type === type);
+                });
+                document.querySelectorAll('.filter-buttons').forEach(el => {
+                  el.style.display = type === 'mylist' ? 'none' : 'flex';
                 });
                 updateSearchUrl("");
                 loadMedia();
             });
         });
-        genreSelect.addEventListener("change", () => {
-          currentGenreId = genreSelect.value || null;
-          reloadBrowseResults();
-        });
-        sortSelect.addEventListener("change", () => {
-          currentFilter = sortSelect.value;
-          reloadBrowseResults();
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const filter = button.dataset.filter;
+                if (filter === currentFilter && !isSearchMode && !currentGenreId) return;
+                currentFilter = filter;
+                isSearchMode = false;
+                currentGenreId = null;
+                currentGenreType = null;
+                currentPage = 1;
+                mediaGrid.innerHTML = "";
+                displayedMediaIds.clear();
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.filter === filter);
+                });
+                document.querySelectorAll('.type-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.type === currentMediaType);
+                });
+                updateSearchUrl("");
+                loadMedia();
+            });
         });
         let scrollTimeout;
         window.addEventListener("scroll", () => {
@@ -1803,21 +1869,66 @@
             }
           }, 100);
         });
+        sidebarToggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isOpen = sidebar.classList.toggle("open");
+          overlay.classList.toggle("active", isOpen);
+          document.body.style.overflowY = isOpen ? "hidden" : "auto";
+        });
+        overlay.addEventListener("click", () => {
+          sidebar.classList.remove("open");
+          overlay.classList.remove("active");
+          document.body.style.overflowY = "auto";
+        });
+        document.addEventListener("click", (e) => {
+          if (
+            sidebar.classList.contains("open") &&
+            !sidebar.contains(e.target) &&
+            e.target !== sidebarToggle
+          ) {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("active");
+            document.body.style.overflowY = "auto";
+          }
+        });
+        let touchStartX = 0;
+        let touchEndX = 0;
+        sidebar.addEventListener("touchstart", (e) => {
+          touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        sidebar.addEventListener("touchend", (e) => {
+          touchEndX = e.changedTouches[0].screenX;
+          handleSwipe();
+        });
+        function handleSwipe() {
+          const swipeThreshold = 50;
+          if (touchEndX < touchStartX - swipeThreshold) {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("active");
+            document.body.style.overflowY = "auto";
+          }
+        }
+        window.addEventListener("orientationchange", () => {
+          if (sidebar.classList.contains("open")) {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("active");
+            document.body.style.overflowY = "auto";
+          }
+        });
         loadGenres();
         document.querySelector(".logo").addEventListener("click", () => {
           searchInput.value = "";
           isSearchMode = false;
           currentPage = 1;
           currentGenreId = null;
+          currentGenreType = null;
           currentFilter = 'popular';
           currentMediaType = 'movie';
           mediaGrid.innerHTML = "";
           displayedMediaIds.clear();
-          searchInput.value = "";
-          currentSearchQuery = "";
-          sortSelect.value = "popular";
-          updateGenreOptions();
-          browseControls.hidden = false;
+          document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === 'popular');
+          });
           document.querySelectorAll('.type-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.type === 'movie');
           });
