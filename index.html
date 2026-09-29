@@ -844,6 +844,301 @@
         color: rgba(255, 255, 255, 0.7);
         margin-top: 3px;
       }
+      :root {
+        --background-color: #101010;
+        --secondary-color: #1b1b1b;
+        --text-color: #f5f3f1;
+        --hover-color: rgba(255, 255, 255, 0.08);
+        --glass-surface: rgba(25, 25, 25, 0.78);
+        --glass-border: rgba(255, 255, 255, 0.13);
+        --muted-text: rgba(245, 243, 241, 0.62);
+        --transition-speed: 0.24s;
+      }
+      body {
+        background:
+          radial-gradient(ellipse at 50% -18%, rgba(116, 27, 31, 0.2), transparent 48%),
+          linear-gradient(180deg, #141313 0, var(--background-color) 420px);
+        color: var(--text-color);
+        letter-spacing: 0;
+      }
+      .container {
+        max-width: 1680px;
+        padding: 18px clamp(16px, 3.2vw, 54px) 64px;
+      }
+      header {
+        margin-bottom: 0;
+      }
+      .header-top {
+        padding: 24px 0 20px;
+        margin-bottom: 8px;
+      }
+      .logo {
+        width: 132px;
+        max-width: 180px;
+        min-width: 100px;
+      }
+      .search-container {
+        max-width: 690px;
+        gap: 10px;
+        margin-bottom: 28px;
+        padding: 0;
+      }
+      #searchInput {
+        min-width: 0;
+        padding: 14px 18px;
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.055);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+      }
+      #searchInput::placeholder {
+        color: rgba(245, 243, 241, 0.46);
+      }
+      #searchInput:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(229, 9, 20, 0.72);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.12);
+      }
+      #searchButton,
+      .modal-action-button,
+      .settings-close-btn {
+        background: #c8101b;
+        border-radius: 6px;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+      }
+      #searchButton {
+        padding: 0 24px;
+      }
+      #searchButton:hover,
+      .modal-action-button:hover,
+      .settings-close-btn:hover {
+        background: #e50914;
+        transform: translateY(-1px);
+      }
+      .media-type-selector {
+        margin-bottom: 14px;
+        background: rgba(255, 255, 255, 0.055);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 7px;
+        padding: 4px;
+      }
+      .type-btn {
+        padding: 9px 18px;
+        border: 0;
+        border-radius: 4px;
+        color: var(--muted-text);
+      }
+      .type-btn.active {
+        background: rgba(255, 255, 255, 0.13);
+        color: #fff;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+      .filter-buttons {
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+      .filter-btn {
+        padding: 8px 14px;
+        border-color: rgba(255, 255, 255, 0.13);
+        border-radius: 5px;
+        color: var(--muted-text);
+      }
+      .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 255, 255, 0.28);
+        color: #fff;
+      }
+      .filter-btn.active {
+        background: rgba(229, 9, 20, 0.14);
+        border-color: rgba(229, 9, 20, 0.55);
+        color: #fff;
+      }
+      .media-section {
+        margin-bottom: 0;
+      }
+      .media-grid {
+        gap: clamp(12px, 1.45vw, 22px);
+        padding: 12px 0;
+      }
+      .media-item {
+        border-radius: 5px;
+        background: #1a1a1a;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+        transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.28s ease;
+      }
+      .media-item:hover {
+        transform: scale(1.035) translateY(-3px);
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.14);
+      }
+      .media-item img {
+        transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.4s ease;
+      }
+      .media-item:hover img {
+        transform: scale(1.035);
+        filter: saturate(1.06);
+      }
+      .media-info {
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.94) 54%);
+      }
+      .media-title {
+        font-size: 0.9rem;
+        line-height: 1.35;
+      }
+      .sidebar {
+        width: min(340px, 86vw);
+        min-width: 260px;
+        background: rgba(18, 18, 18, 0.82);
+        border-right: 1px solid var(--glass-border);
+        box-shadow: 18px 0 55px rgba(0, 0, 0, 0.38);
+        backdrop-filter: blur(24px) saturate(135%);
+        -webkit-backdrop-filter: blur(24px) saturate(135%);
+      }
+      .genre-header {
+        background: rgba(255, 255, 255, 0.045);
+        color: #ef555b;
+      }
+      .genre-item {
+        color: rgba(245, 243, 241, 0.82);
+      }
+      .genre-item:hover {
+        background: rgba(255, 255, 255, 0.075);
+      }
+      .sidebar-toggle,
+      .settings-toggle,
+      #scrollToTopBtn {
+        background: var(--glass-surface);
+        border: 1px solid var(--glass-border);
+        color: #fff;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.09);
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      }
+      .sidebar-toggle {
+        padding: 11px 16px;
+        border-radius: 6px;
+        font-size: 0.88rem;
+      }
+      .sidebar-toggle:hover,
+      .settings-toggle:hover,
+      #scrollToTopBtn:hover {
+        background: rgba(58, 31, 32, 0.88);
+        border-color: rgba(229, 9, 20, 0.4);
+      }
+      .settings-toggle {
+        border-radius: 7px;
+      }
+      .settings-toggle:hover {
+        transform: translateY(-1px);
+      }
+      #scrollToTopBtn {
+        padding: 13px;
+      }
+      .modal {
+        background-color: rgba(5, 5, 5, 0.82);
+        backdrop-filter: blur(14px) saturate(115%);
+        -webkit-backdrop-filter: blur(14px) saturate(115%);
+      }
+      .modal-content {
+        background: rgba(18, 18, 18, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.62);
+      }
+      .media-details {
+        background: rgba(255, 255, 255, 0.045);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 6px;
+      }
+      .settings-modal-overlay {
+        background: rgba(5, 5, 5, 0.68);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+      }
+      .settings-card {
+        background: rgba(27, 27, 27, 0.88);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 1px rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(24px) saturate(130%);
+        -webkit-backdrop-filter: blur(24px) saturate(130%);
+      }
+      .language-input-group input,
+      #seasonSelect,
+      #episodeSelect,
+      .media-server-selector {
+        background-color: rgba(0, 0, 0, 0.34);
+        border-color: rgba(255, 255, 255, 0.14);
+        border-radius: 5px;
+      }
+      .nav-button,
+      .fullscreen-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.13);
+        border-radius: 5px;
+      }
+      .nav-button:hover:not(:disabled),
+      .fullscreen-btn:hover {
+        background: rgba(229, 9, 20, 0.18);
+        border-color: rgba(229, 9, 20, 0.45);
+      }
+      .recommendations-section {
+        border-top-color: rgba(255, 255, 255, 0.1);
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 2px solid rgba(255, 255, 255, 0.82);
+        outline-offset: 3px;
+      }
+      @media (max-width: 768px) {
+        .container {
+          padding: 12px 14px 48px;
+        }
+        .search-container {
+          width: 100%;
+          padding: 0;
+        }
+      }
+      @media (max-width: 480px) {
+        .logo {
+          width: 116px;
+        }
+        .sidebar-toggle {
+          left: 12px;
+          top: 12px;
+          padding: 9px 11px;
+          font-size: 0.8rem;
+        }
+        .settings-toggle {
+          right: 12px;
+          top: 12px;
+          width: 40px;
+          height: 40px;
+        }
+        .filter-buttons {
+          gap: 6px;
+        }
+        .filter-btn {
+          padding: 8px 10px;
+          font-size: 0.82rem;
+        }
+        .media-grid {
+          gap: 10px;
+        }
+        .modal-content {
+          border-left: 0;
+          border-right: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -945,14 +1240,15 @@
       let currentFilter = 'popular';
       
       let useOriginalLanguage = false;
-      let userLanguageCode = "en-US";
+      const browserLanguageCode = navigator.languages?.[0] || navigator.language || "en-US";
+      let userLanguageCode = browserLanguageCode;
       
       function loadLanguageSettings() {
         const savedOriginal = localStorage.getItem("useOriginalLanguage");
         const savedLanguageCode = localStorage.getItem("userLanguageCode");
         
         useOriginalLanguage = savedOriginal === "true";
-        userLanguageCode = savedLanguageCode || "en-US";
+        userLanguageCode = savedLanguageCode || browserLanguageCode;
       }
       
       function saveLanguageSettings() {
@@ -1746,6 +2042,9 @@
         currentMediaType = mediaType;
         const typeBtn = document.querySelector(`.type-btn[data-type="${mediaType}"]`);
         if (typeBtn) typeBtn.classList.add('active');
+        sidebar.classList.remove("open");
+        document.querySelector(".sidebar-overlay").classList.remove("active");
+        document.body.style.overflowY = "auto";
         loadMedia();
       }
       window.onscroll = function () {
@@ -1803,6 +2102,15 @@
         const overlay = document.createElement("div");
         overlay.className = "sidebar-overlay";
         document.body.appendChild(overlay);
+        currentMediaType = "movie";
+        currentFilter = "popular";
+        document.querySelectorAll(".type-btn").forEach((button) => {
+          button.classList.toggle("active", button.dataset.type === "movie");
+        });
+        document.querySelectorAll(".filter-btn").forEach((button) => {
+          button.classList.toggle("active", button.dataset.filter === "popular");
+        });
+        document.querySelector(".filter-buttons").style.display = "flex";
         handleUrlParameters(true);
         if (!new URLSearchParams(window.location.search).get("search")) {
           loadMedia();
