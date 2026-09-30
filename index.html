@@ -1203,7 +1203,8 @@
       <div class="filter-buttons">
         <button class="filter-btn active" data-filter="popular">Popular</button>
         <button class="filter-btn" data-filter="top_rated">Top Rated</button>
-        <button class="filter-btn" data-filter="trending">Trending</button>
+        <button class="filter-btn" data-filter="discover">Discover</button>
+        <button class="filter-btn" data-filter="trending">Trending Today</button>
       </div>
       <section class="media-section">
         <div id="mediaGrid" class="media-grid"></div>
@@ -1228,7 +1229,18 @@
           },
         },
       };
-      let currentMediaType = "movie";
+      function loadBrowseSettings() {
+        try {
+          const settings = JSON.parse(localStorage.getItem("netflix_browse_settings") || "{}");
+          return settings && typeof settings === "object" && !Array.isArray(settings) ? settings : {};
+        } catch {
+          return {};
+        }
+      }
+      const savedBrowseSettings = loadBrowseSettings();
+      let currentMediaType = ["movie", "tv", "mylist"].includes(savedBrowseSettings.mediaType)
+        ? savedBrowseSettings.mediaType
+        : "movie";
       let myList = JSON.parse(localStorage.getItem("netflix_my_list") || "[]");
       let currentPage = 1;
       let isLoading = false;
@@ -1237,7 +1249,27 @@
       let currentSearchQuery = "";
       let currentGenreId = null;
       let currentGenreType = null;
-      let currentFilter = 'popular';
+      let currentFilter = ["popular", "top_rated", "discover", "trending"].includes(savedBrowseSettings.filter)
+        ? savedBrowseSettings.filter
+        : "popular";
+      let currentTrendingWindow = ["day", "week"].includes(savedBrowseSettings.trendingWindow)
+        ? savedBrowseSettings.trendingWindow
+        : "day";
+
+      function saveBrowseSettings() {
+        localStorage.setItem("netflix_browse_settings", JSON.stringify({
+          mediaType: currentMediaType,
+          filter: currentFilter,
+          trendingWindow: currentTrendingWindow,
+        }));
+      }
+
+      function updateTrendingButtonLabel() {
+        const trendingButton = document.querySelector('.filter-btn[data-filter="trending"]');
+        if (trendingButton) {
+          trendingButton.textContent = currentTrendingWindow === "day" ? "Trending Today" : "Trending This Week";
+        }
+      }
       
       let useOriginalLanguage = false;
       const browserLanguageCode = navigator.languages?.[0] || navigator.language || "en-US";
@@ -1401,7 +1433,7 @@
         }
         let endpoint = '';
         let mediaTypeForDisplay = currentMediaType;
-        let params = { page: currentPage };
+        let params = currentPage > 1 ? { page: currentPage } : {};
         if (currentGenreId) {
             endpoint = `/discover/${currentGenreType}`;
             params.with_genres = currentGenreId;
@@ -1418,8 +1450,11 @@
                 case 'top_rated':
                     endpoint = `/${currentMediaType}/top_rated`;
                     break;
+                case 'discover':
+                  endpoint = `/discover/${currentMediaType}`;
+                  break;
                 case 'trending':
-                    endpoint = `/trending/${currentMediaType}/week`;
+                  endpoint = `/trending/${currentMediaType}/${currentTrendingWindow}`;
                     break;
                 default:
                     return;
@@ -2053,14 +2088,13 @@
         const normalizedQuery = query.trim();
         currentGenreId = null;
         currentGenreType = null;
-        currentFilter = 'popular';
         currentSearchQuery = normalizedQuery;
         isSearchMode = Boolean(normalizedQuery);
         currentPage = 1;
         mediaGrid.innerHTML = "";
         displayedMediaIds.clear();
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.filter === 'popular');
+            btn.classList.toggle('active', btn.dataset.filter === currentFilter);
         });
         updateSearchUrl(normalizedQuery);
         loadMedia();
@@ -2167,15 +2201,14 @@
         const overlay = document.createElement("div");
         overlay.className = "sidebar-overlay";
         document.body.appendChild(overlay);
-        currentMediaType = "movie";
-        currentFilter = "popular";
+        updateTrendingButtonLabel();
         document.querySelectorAll(".type-btn").forEach((button) => {
-          button.classList.toggle("active", button.dataset.type === "movie");
+          button.classList.toggle("active", button.dataset.type === currentMediaType);
         });
         document.querySelectorAll(".filter-btn").forEach((button) => {
-          button.classList.toggle("active", button.dataset.filter === "popular");
+          button.classList.toggle("active", button.dataset.filter === currentFilter);
         });
-        document.querySelector(".filter-buttons").style.display = "flex";
+        document.querySelector(".filter-buttons").style.display = currentMediaType === "mylist" ? "none" : "flex";
         handleUrlParameters(true);
         if (!new URLSearchParams(window.location.search).get("search")) {
           loadMedia();
@@ -2195,6 +2228,7 @@
                 const type = button.dataset.type;
                 if (type === currentMediaType && !isSearchMode && !currentGenreId) return;
                 currentMediaType = type;
+                saveBrowseSettings();
                 currentPage = 1;
                 isSearchMode = false;
                 currentGenreId = null;
@@ -2214,8 +2248,17 @@
         document.querySelectorAll('.filter-btn').forEach(button => {
             button.addEventListener('click', () => {
                 const filter = button.dataset.filter;
-                if (filter === currentFilter && !isSearchMode && !currentGenreId) return;
+                const isRepeatTrending = filter === 'trending'
+                  && currentFilter === 'trending'
+                  && !isSearchMode
+                  && !currentGenreId;
+                if (filter === currentFilter && !isSearchMode && !currentGenreId && !isRepeatTrending) return;
+                if (isRepeatTrending) {
+                  currentTrendingWindow = currentTrendingWindow === 'day' ? 'week' : 'day';
+                }
                 currentFilter = filter;
+                saveBrowseSettings();
+                updateTrendingButtonLabel();
                 isSearchMode = false;
                 currentGenreId = null;
                 currentGenreType = null;
@@ -2296,7 +2339,10 @@
           currentGenreId = null;
           currentGenreType = null;
           currentFilter = 'popular';
+          currentTrendingWindow = 'day';
           currentMediaType = 'movie';
+          saveBrowseSettings();
+          updateTrendingButtonLabel();
           mediaGrid.innerHTML = "";
           displayedMediaIds.clear();
           document.querySelectorAll('.filter-btn').forEach(btn => {
