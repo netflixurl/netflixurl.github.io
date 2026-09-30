@@ -207,6 +207,13 @@
         z-index: 1;
         color: #fff;
       }
+      .rating-meta {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
       .media-details {
         background-color: var(--secondary-color);
         padding: 2vh;
@@ -1255,6 +1262,7 @@
       let currentTrendingWindow = ["day", "week"].includes(savedBrowseSettings.trendingWindow)
         ? savedBrowseSettings.trendingWindow
         : "day";
+      let isLoadingMyListDates = false;
 
       function saveBrowseSettings() {
         localStorage.setItem("netflix_browse_settings", JSON.stringify({
@@ -1429,6 +1437,7 @@
         if (isLoading) return;
         if (currentMediaType === 'mylist' && !isSearchMode && !currentGenreId) {
           displayMedia(myList, "mediaGrid", "multi", currentPage === 1);
+          loadMissingMyListDates();
           return;
         }
         let endpoint = '';
@@ -1477,7 +1486,7 @@
           isLoading = false;
         }
       }
-      function getRatingCircle(vote) {
+      function getRatingCircle(vote, mediaType = null, releaseDate = "") {
         const percentage = Math.round(vote * 10);
         const deg = (percentage / 100) * 360;
         let r, g, b = 0;
@@ -1490,11 +1499,15 @@
         }
         const color = `rgb(${r}, ${g}, ${b})`;
         const bgColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+        const ratingMeta = mediaType
+          ? `<span class="rating-meta">${mediaType.toUpperCase()}${releaseDate ? ` • ${releaseDate.slice(0, 4)}` : ""}</span>`
+          : "";
         return `
           <div class="rating-container">
             <div class="rating-circle" style="--rating-deg: ${deg}deg; --rating-color: ${color}; --circle-bg: ${bgColor}">
               <span>${percentage}%</span>
             </div>
+            ${ratingMeta}
           </div>
         `;
       }
@@ -1548,7 +1561,7 @@
               ${imgHTML}
               <div class="media-info">
                 <h3 class="media-title">${altTitle}</h3>
-                ${getRatingCircle(item.vote_average)}
+                ${getRatingCircle(item.vote_average, type, type === "tv" ? item.first_air_date : item.release_date)}
               </div>
             `;
             const posterImage = mediaItem.querySelector("img");
@@ -1568,6 +1581,7 @@
         mediaList.forEach((item) => {
           const mediaItem = document.createElement("div");
           mediaItem.className = "media-item";
+          const type = item.media_type || (mediaType === "multi" ? (item.title ? "movie" : "tv") : mediaType);
           const title = getMediaTitle(item);
           const posterPath = item.poster_path ? `${CONFIG.urls.tmdb.images}${item.poster_path}` : null;
           const imgHTML = posterPath || (useOriginalLanguage && item.original_language)
@@ -1577,7 +1591,7 @@
             ${imgHTML}
             <div class="media-info">
               <h3 class="media-title">${title}</h3>
-              ${getRatingCircle(item.vote_average)}
+              ${getRatingCircle(item.vote_average, type, type === "tv" ? item.first_air_date : item.release_date)}
             </div>
           `;
           const posterImage = mediaItem.querySelector("img");
@@ -1603,7 +1617,9 @@
             media_type: media.title ? 'movie' : 'tv',
             title: media.original_title || media.original_name || media.title || media.name,
             poster_path: media.poster_path,
-            vote_average: media.vote_average
+            vote_average: media.vote_average,
+            release_date: media.release_date,
+            first_air_date: media.first_air_date
           });
         }
         localStorage.setItem("netflix_my_list", JSON.stringify(myList));
@@ -1612,6 +1628,31 @@
           currentPage = 1;
           displayMedia(myList, "mediaGrid", "multi", true);
         }
+      }
+      function loadMissingMyListDates() {
+        if (isLoadingMyListDates) return;
+        const itemsMissingDates = myList.filter((item) => {
+          const date = item.media_type === "tv" ? item.first_air_date : item.release_date;
+          return !date && (item.media_type === "movie" || item.media_type === "tv");
+        });
+        if (!itemsMissingDates.length) return;
+
+        isLoadingMyListDates = true;
+        Promise.all(itemsMissingDates.map(async (item) => {
+          const details = await fetchTMDBData(`/${item.media_type}/${item.id}`);
+          if (!details) return false;
+          item.release_date = details.release_date;
+          item.first_air_date = details.first_air_date;
+          return true;
+        })).then((updatedItems) => {
+          if (!updatedItems.some(Boolean)) return;
+          localStorage.setItem("netflix_my_list", JSON.stringify(myList));
+          if (currentMediaType === "mylist" && !isSearchMode && !currentGenreId) {
+            displayMedia(myList, "mediaGrid", "multi", true);
+          }
+        }).finally(() => {
+          isLoadingMyListDates = false;
+        });
       }
       function updateBookmarkButtons(id) {
         const isBookmarked = myList.some(item => item.id === id);
